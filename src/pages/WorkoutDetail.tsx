@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/database';
-import { deleteWorkout, duplicateWorkout, getActiveWorkout, reopenWorkout, updateProgramFromWorkout } from '../db/actions';
+import { deleteWorkout } from '../db/actions';
 import { ProgramCompare } from '../components/ProgramCompare';
 import { DIFFICULTIES } from '../db/types';
 import { buildSession, compareSessions, isPR, sessionsFromSets } from '../lib/analysis';
@@ -11,12 +11,10 @@ import { showNum } from '../lib/numbers';
 import { useExerciseMap } from '../hooks/data';
 import { Icon } from '../components/Icon';
 import { TrendChip } from '../components/Trend';
-import { useToast } from '../components/Toast';
 
 export default function WorkoutDetail() {
   const { id = '' } = useParams();
   const nav = useNavigate();
-  const toast = useToast();
   const exMap = useExerciseMap();
   const data = useLiveQuery(async () => {
     const w = await db.workouts.get(id);
@@ -35,25 +33,14 @@ export default function WorkoutDetail() {
 
   if (data === undefined) return <div className="page" />;
   if (data === null) return <div className="page"><div className="empty"><h3>Séance introuvable</h3><Link to="/history" className="btn mt">Historique</Link></div></div>;
-  const { w, wes, sets, hist, program } = data;
+  const { w, wes, sets, hist } = data;
 
-  const duplicate = async () => {
-    const active = await getActiveWorkout();
-    if (active) { toast('Terminez d\'abord la séance en cours'); nav(`/workout/${active.id}`); return; }
-    const nid = await duplicateWorkout(id);
-    toast('Séance dupliquée — à vous de jouer !');
-    nav(`/workout/${nid}`);
-  };
-  const edit = async () => {
-    if (w.quick && w.programId) { nav(`/seance/${w.programId}?date=${w.date}`); return; }
-    try { await reopenWorkout(id); nav(`/workout/${id}`); } catch (e) { toast((e as Error).message); }
-  };
 
   return (
     <div className="page">
       <div className="nav-top">
         <button className="back" onClick={() => nav(-1)}><Icon name="chevL" /> Retour</button>
-        <button className="btn sm" onClick={edit}><Icon name="edit" size={16} /> Modifier</button>
+        {w.quick && w.programId && <button className="btn sm" onClick={() => nav(`/seance/${w.programId}?date=${w.date}`)}><Icon name="edit" size={16} /> Modifier</button>}
       </div>
       <div className="header" style={{ marginTop: 0 }}>
         <div><div className="sub">{formatDateLong(w.date)}</div><h1 style={{ fontSize: 28 }}>{w.name}</h1></div>
@@ -66,16 +53,6 @@ export default function WorkoutDetail() {
       {w.notes && <div className="card mt small muted">{w.notes}</div>}
       <ProgramCompare workout={w} />
 
-      {w.quick && w.programId
-        ? <button className="btn primary block mt2" onClick={() => nav(`/seance/${w.programId}`)}><Icon name="edit" size={18} /> Refaire aujourd'hui</button>
-        : <button className="btn primary block mt2" onClick={duplicate}><Icon name="copy" size={18} /> Refaire cette séance</button>}
-      {program && (
-        <button className="btn block mt" onClick={async () => {
-          if (!confirm(`Remplacer le modèle « ${program.name} » par le contenu de cette séance (exercices, nombre de séries, charges) ? Vos séances passées ne seront pas modifiées.`)) return;
-          await updateProgramFromWorkout(program.id, id);
-          toast('Modèle mis à jour pour les prochaines séances');
-        }}><Icon name="programs" size={18} /> Mettre à jour le modèle « {program.name} »</button>
-      )}
 
       <div className="section-title">Exercices</div>
       {wes.map((we) => {

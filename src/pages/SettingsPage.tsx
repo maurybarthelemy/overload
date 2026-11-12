@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { db, getMeta, requestPersistence, setMeta } from '../db/database';
+import { db, requestPersistence } from '../db/database';
 import { exportCSV, exportJSON, readBackupFile, restoreBackup, type BackupFile } from '../lib/backup';
 import { relativeDay, toISO } from '../lib/format';
 import { Icon } from '../components/Icon';
@@ -15,7 +15,6 @@ export default function SettingsPage() {
   const [pending, setPending] = useState<BackupFile | null>(null);
   const [persisted, setPersisted] = useState<boolean | null>(null);
   const [usage, setUsage] = useState<string>('');
-  const [rest, setRest] = useState(0);
   const lastExport = useLiveQuery(() => db.meta.get('lastExport').then((m) => (m?.value as number) ?? 0));
   const snapshots = useLiveQuery(() => db.backups.orderBy('createdAt').reverse().toArray());
   const counts = useLiveQuery(async () => ({ w: await db.workouts.count(), s: await db.sets.count(), e: await db.exercises.count() }));
@@ -23,7 +22,6 @@ export default function SettingsPage() {
   useEffect(() => {
     navigator.storage?.persisted?.().then(setPersisted).catch(() => setPersisted(null));
     navigator.storage?.estimate?.().then((e) => setUsage(`${((e.usage ?? 0) / 1024 / 1024).toFixed(1)} Mo utilisés`)).catch(() => {});
-    getMeta('restSeconds', 0).then(setRest);
   }, []);
 
   const standalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone;
@@ -91,17 +89,6 @@ export default function SettingsPage() {
           <p className="small muted mt" style={{ padding: '0 4px' }}>Créés à chaque fin de séance et une fois par jour (10 derniers conservés, sur cet appareil).</p>
         </>
       )}
-
-      <div className="section-title">Séance</div>
-      <div className="list">
-        <div className="row">
-          <div className="grow"><div className="title">Temps de repos</div><div className="meta">Minuteur après chaque série validée (désactivé par défaut)</div></div>
-          <select className="input" style={{ width: 110, height: 38 }} value={rest} onChange={async (e) => { const v = Number(e.target.value); setRest(v); await setMeta('restSeconds', v); }}>
-            <option value={0}>Désactivé</option>
-            {[30, 45, 60, 75, 90, 120, 150, 180, 240, 300].map((s) => <option key={s} value={s}>{Math.floor(s / 60)}:{String(s % 60).padStart(2, '0')}</option>)}
-          </select>
-        </div>
-      </div>
 
       <p className="small muted mt2" style={{ textAlign: 'center' }}>Overload v1.0 · données stockées localement sur cet appareil</p>
 

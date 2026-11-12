@@ -3,16 +3,15 @@ import { Link } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/database';
 import { todayWeekday, WEEKDAYS, type Program } from '../db/types';
-import { useActiveWorkout, useExerciseMap, usePrograms } from '../hooks/data';
+import { useExerciseMap, usePrograms } from '../hooks/data';
 import { relativeDay } from '../lib/format';
 import { Icon } from '../components/Icon';
-import { ProgramEditor } from './ProgramsPage';
+import { ProgramEditor } from '../components/ProgramEditor';
 
 /** Onglet 1 : les séances modèles. On en ouvre une, on tape ses poids, c'est tout. */
 export default function SeancesPage() {
   const programs = usePrograms();
   const exMap = useExerciseMap();
-  const active = useActiveWorkout();
   const [editing, setEditing] = useState<Partial<Program> | null>(null);
   const lastByProgram = useLiveQuery(async () => {
     const m = new Map<string, string>();
@@ -27,14 +26,8 @@ export default function SeancesPage() {
     <div className="page">
       <div className="header">
         <div><div className="sub">{WEEKDAYS[today]}</div><h1>Séances</h1></div>
-        <Link to="/settings" className="icon-btn" aria-label="Réglages"><Icon name="gear" size={20} /></Link>
       </div>
 
-      {active && (
-        <Link to={`/workout/${active.id}`} className="banner blue pressable" style={{ textDecoration: 'none' }}>
-          <span>▶</span><span style={{ flex: 1 }}>Une séance guidée « {active.name} » est en cours — la reprendre</span><Icon name="chevR" size={16} />
-        </Link>
-      )}
 
       {sorted.map((p) => {
         const isToday = p.days?.includes(today);

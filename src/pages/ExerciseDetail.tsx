@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/database';
-import { deleteExercise, updateExercise } from '../db/actions';
 import { muscleLabel, type WorkoutExercise } from '../db/types';
 import { compareSessions, computeRecords, rangeStart, RANGES, recommend, sessionsFromSets, type Range } from '../lib/analysis';
 import { formatDateFull, formatDateShort, kg, relativeDay } from '../lib/format';
@@ -10,10 +9,7 @@ import { showNum } from '../lib/numbers';
 import { Icon } from '../components/Icon';
 import { LineArea } from '../components/Charts';
 import { Segmented } from '../components/Segmented';
-import { Sheet } from '../components/Sheet';
-import { ExerciseForm } from '../components/ExerciseForm';
 import { TrendChip } from '../components/Trend';
-import { QuickLogSheet } from '../components/QuickLogSheet';
 
 type Metric = 'weight' | 'e1rm' | 'reps' | 'volume';
 
@@ -28,16 +24,14 @@ export default function ExerciseDetail() {
   }, [id]);
   const [range, setRange] = useState<Range>('3m');
   const [metric, setMetric] = useState<Metric>('weight');
-  const [edit, setEdit] = useState(false);
   const [showAll, setShowAll] = useState(false);
-  const [logging, setLogging] = useState(false);
 
   const sessions = useMemo(() => sessionsFromSets(data?.sets ?? []), [data]);
   const records = useMemo(() => computeRecords(sessions), [sessions]);
   const inRange = sessions.filter((s) => s.date >= rangeStart(range));
 
   if (ex === undefined || !data) return <div className="page" />;
-  if (ex === null) return <div className="page"><div className="empty"><h3>Exercice introuvable</h3><Link to="/library" className="btn mt">Bibliothèque</Link></div></div>;
+  if (ex === null) return <div className="page"><div className="empty"><h3>Exercice introuvable</h3><Link to="/progression" className="btn mt">Progression</Link></div></div>;
 
   const last = sessions[sessions.length - 1];
   const prev = sessions[sessions.length - 2];
@@ -59,10 +53,6 @@ export default function ExerciseDetail() {
     <div className="page">
       <div className="nav-top">
         <button className="back" onClick={() => nav(-1)}><Icon name="chevL" /> Retour</button>
-        <div className="flex">
-          <button className="icon-btn" style={{ color: ex.favorite ? 'var(--orange)' : undefined }} onClick={() => updateExercise(id, { favorite: !ex.favorite })} aria-label="Favori"><Icon name="star" size={18} fill={ex.favorite} /></button>
-          <button className="icon-btn" onClick={() => setEdit(true)} aria-label="Modifier"><Icon name="edit" size={18} /></button>
-        </div>
       </div>
       <div className="header" style={{ marginTop: 0 }}>
         <div>
@@ -71,11 +61,8 @@ export default function ExerciseDetail() {
         </div>
       </div>
 
-      <button className="btn primary block" style={{ marginBottom: 14 }} onClick={() => setLogging(true)}><Icon name="edit" size={18} /> Noter mes poids</button>
-      <QuickLogSheet exerciseId={logging ? id : null} onClose={() => setLogging(false)} />
-
       {sessions.length === 0 ? (
-        <div className="card empty"><div className="big">📈</div><h3>Pas encore d'historique</h3><p>Touchez « Noter mes poids » pour enregistrer votre première performance.</p></div>
+        <div className="card empty"><div className="big">📈</div><h3>Pas encore d'historique</h3><p>Mettez vos poids dans l'onglet Séances pour voir votre évolution ici.</p></div>
       ) : (
         <>
           <div className="grid2">
@@ -120,13 +107,6 @@ export default function ExerciseDetail() {
         </>
       )}
 
-      <Sheet open={edit} onClose={() => setEdit(false)} title="Modifier l'exercice">
-        <ExerciseForm initial={ex} onSubmit={async (v) => { await updateExercise(id, v); setEdit(false); }} />
-        <button className="btn danger block mt" onClick={async () => {
-          if (!confirm(sessions.length ? 'Cet exercice a un historique : il sera masqué de la bibliothèque mais vos données sont conservées. Continuer ?' : 'Supprimer cet exercice ?')) return;
-          await deleteExercise(id); nav('/library', { replace: true });
-        }}>{sessions.length ? 'Archiver l\'exercice' : 'Supprimer l\'exercice'}</button>
-      </Sheet>
     </div>
   );
 }

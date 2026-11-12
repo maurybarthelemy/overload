@@ -1,25 +1,16 @@
 import { lazy, Suspense, useEffect } from 'react';
-import { HashRouter, Link, NavLink, Route, Routes, useLocation } from 'react-router-dom';
+import { HashRouter, NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import { Icon } from './components/Icon';
 import { ToastProvider } from './components/Toast';
-import { useActiveWorkout } from './hooks/data';
 import SeancesPage from './pages/SeancesPage';
-import WorkoutPage from './pages/WorkoutPage';
 
-// Pages secondaires chargées à la demande (démarrage plus rapide)
+const SessionForm = lazy(() => import('./pages/SessionForm'));
 const HistoryPage = lazy(() => import('./pages/HistoryPage'));
 const WorkoutDetail = lazy(() => import('./pages/WorkoutDetail'));
-const ProgramsPage = lazy(() => import('./pages/ProgramsPage'));
-const LibraryPage = lazy(() => import('./pages/LibraryPage'));
-const ExerciseDetail = lazy(() => import('./pages/ExerciseDetail'));
-const StatsPage = lazy(() => import('./pages/StatsPage'));
-const SettingsPage = lazy(() => import('./pages/SettingsPage'));
-const CarnetPage = lazy(() => import('./pages/CarnetPage'));
-const Dashboard = lazy(() => import('./pages/Dashboard'));
-const SessionForm = lazy(() => import('./pages/SessionForm'));
 const ProgressionPage = lazy(() => import('./pages/ProgressionPage'));
+const ExerciseDetail = lazy(() => import('./pages/ExerciseDetail'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 
-// Interface simplifiée : 3 onglets. Les autres écrans restent accessibles via les liens.
 const TABS = [
   { to: '/', icon: 'library', label: 'Séances' },
   { to: '/history', icon: 'history', label: 'Historique' },
@@ -28,34 +19,21 @@ const TABS = [
 
 function Shell() {
   const loc = useLocation();
-  const active = useActiveWorkout();
   useEffect(() => { window.scrollTo(0, 0); }, [loc.pathname]);
-  const inWorkout = loc.pathname.startsWith('/workout/') || loc.pathname.startsWith('/seance/');
   return (
     <div className="app">
       <Suspense fallback={<div className="page" />}>
         <Routes>
           <Route path="/" element={<SeancesPage />} />
           <Route path="/seance/:id" element={<SessionForm />} />
-          <Route path="/progression" element={<ProgressionPage />} />
-          <Route path="/accueil" element={<Dashboard />} />
-          <Route path="/workout/:id" element={<WorkoutPage />} />
           <Route path="/history" element={<HistoryPage />} />
           <Route path="/history/:id" element={<WorkoutDetail />} />
-          <Route path="/programs" element={<ProgramsPage />} />
-          <Route path="/library" element={<LibraryPage />} />
+          <Route path="/progression" element={<ProgressionPage />} />
           <Route path="/exercise/:id" element={<ExerciseDetail />} />
-          <Route path="/stats" element={<StatsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/carnet/:id" element={<CarnetPage />} />
           <Route path="*" element={<SeancesPage />} />
         </Routes>
       </Suspense>
-      {active && !inWorkout && loc.pathname !== '/' && (
-        <Link to={`/workout/${active.id}`} className="live-bar pressable">
-          <span className="dot" /><span style={{ flex: 1 }}>{active.name} — en cours</span><Icon name="chevR" size={18} />
-        </Link>
-      )}
       <div className="tabbar">
         <nav>
           {TABS.map((t) => (

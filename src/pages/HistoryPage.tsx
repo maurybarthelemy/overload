@@ -51,6 +51,7 @@ export default function HistoryPage() {
           </div>
         </div>
       ))}
+      <Link to="/settings" className="btn ghost block mt2" style={{ color: 'var(--text-2)' }}><Icon name="download" size={18} /> Sauvegarder mes données</Link>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from './database';
-import { ensureWeeklyPlan, finishWorkout, quickLog, saveProgram, startWorkout, updateSet } from './actions';
+import { closeLegacyActiveWorkouts, ensureWeeklyPlan, finishWorkout, quickLog, saveProgram, startWorkout, updateSet } from './actions';
 
 const setsOf = async (workoutId: string) => (await db.sets.where('workoutId').equals(workoutId).toArray()).sort((a, b) => a.createdAt - b.createdAt);
 
@@ -84,5 +84,14 @@ describe('modèles permanents et historique', () => {
     await quickLog({ exerciseId: 'ex-pec-deck', programId: pid, date: '2026-11-09', sets: [] });
     expect(await db.workouts.count()).toBe(1);
     expect(await db.sets.count()).toBe(2);
+  });
+
+  it("récupère une séance restée « en cours » avec les poids remplis", async () => {
+    const pid = await saveProgram({ name: 'Pectoraux', days: [0], items: [{ exerciseId: 'ex-developpe-incline-halteres', sets: 3, reps: 8, weight: 26 }] });
+    const w = await startWorkout({ programId: pid }); // 3 séries 26 × 8 remplies, non cochées
+    await closeLegacyActiveWorkouts();
+    const after = await db.workouts.get(w);
+    expect(after).toMatchObject({ status: 'done', quick: true });
+    expect((await setsOf(w)).filter((s) => s.done).map((s) => s.weight)).toEqual([26, 26, 26]);
   });
 });

@@ -9,7 +9,7 @@ L'interface tient en **3 onglets** :
 2. **Historique** : les séances faites, modifiables.
 3. **Progression** : l'objectif de la prochaine séance pour chaque exercice, la tendance, le record et une mini-courbe. Un toucher ouvre la courbe détaillée.
 
-Les écrans plus complets restent accessibles : tableau de bord (`#/accueil`), statistiques (depuis Progression), réglages et sauvegarde (depuis Séances), séance guidée.
+La sauvegarde / restauration est en bas de l'onglet Historique. Toucher un exercice dans Progression ouvre sa courbe détaillée.
 
 - **Dashboard** : séances, exercices pratiqués, dernière séance, progression globale (1RM estimé sur 8 semaines), records récents, courbes charge / volume, démarrage rapide.
 - **Séance en cours** : programmes ou séance libre, séries pré-remplies avec les charges de la dernière fois, validation d'une série en un geste (enregistrée immédiatement), minuteur de repos optionnel (désactivé par défaut), détection des records en direct, difficulté ressentie, technique, commentaires, modification / duplication / suppression de séries.

@@ -287,6 +287,24 @@ export async function updateProgramFromWorkout(programId: string, workoutId: str
   await db.programs.update(programId, { items, exerciseIds: items.map((i) => i.exerciseId) });
 }
 
+/**
+ * L'ancienne « séance guidée » n'existe plus : une séance restée en cours est enregistrée
+ * avec les séries remplies (poids ET répétitions saisis), puis devient modifiable comme les autres.
+ */
+export async function closeLegacyActiveWorkouts() {
+  const actives = await db.workouts.where('status').equals('active').toArray();
+  for (const w of actives) {
+    await db.transaction('rw', db.workouts, db.workoutExercises, db.sets, async () => {
+      await db.sets.where('workoutId').equals(w.id).filter((s) => !s.done && s.reps > 0 && s.weight > 0).modify({ done: true });
+    });
+    const has = await db.sets.where('workoutId').equals(w.id).filter((s) => s.done).count();
+    if (!has) { await deleteWorkout(w.id); continue; }
+    await finishWorkout(w.id);
+    const clash = w.programId && (await db.workouts.where('date').equals(w.date).filter((x) => x.id !== w.id && !!x.quick && x.programId === w.programId).count());
+    if (!clash) await db.workouts.update(w.id, { quick: true });
+  }
+}
+
 // ---------- Semaine type par défaut ----------
 const DEFAULT_WEEK: { name: string; focus: string; days: number[]; color: string; items: [string, number, number][] }[] = [
   { name: 'Pectoraux', focus: 'Pectoraux', days: [0], color: '#30D158', items: [

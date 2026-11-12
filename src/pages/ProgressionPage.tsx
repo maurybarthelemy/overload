@@ -4,7 +4,6 @@ import { useAllDoneSets, useExerciseMap, usePrograms } from '../hooks/data';
 import { compareSessions, computeRecords, rangeStart, RANGES, recommend, sessionsFromSets, type Range } from '../lib/analysis';
 import { formatDateShort } from '../lib/format';
 import { showNum } from '../lib/numbers';
-import { Icon } from '../components/Icon';
 import { Segmented } from '../components/Segmented';
 import { Sparkline } from '../components/Sparkline';
 import { TrendChip } from '../components/Trend';
@@ -66,7 +65,6 @@ export default function ProgressionPage() {
     <div className="page">
       <div className="header">
         <div><div className="sub">Objectifs & évolution</div><h1>Progression</h1></div>
-        <Link to="/stats" className="icon-btn" aria-label="Statistiques détaillées"><Icon name="stats" size={20} /></Link>
       </div>
       <Segmented value={range} onChange={setRange} options={RANGES.map((r) => ({ id: r.id, label: r.label }))} />
       <p className="small muted" style={{ margin: '10px 4px 0' }}>
