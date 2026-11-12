@@ -255,3 +255,26 @@ select.input { appearance: none; -webkit-appearance: none; }
 @media (min-width: 760px) {
   .page { padding-top: 28px; }
 }
+
+/* ---------- Semaine type (Programmes) ---------- */
+.day-card { background: var(--card); border-radius: var(--radius); padding: 14px; margin-bottom: 10px; border: 1px solid transparent; }
+.day-card.today { border-color: rgba(48, 209, 88, .45); box-shadow: 0 0 0 4px rgba(48, 209, 88, .07); }
+.day-card.is-rest { background: rgba(23, 23, 27, .55); }
+.day-head { display: flex; align-items: center; justify-content: space-between; min-height: 32px; }
+.day-name { font-size: 17px; font-weight: 700; }
+.day-rest { color: var(--text-3); font-size: 15px; margin-top: 4px; }
+.day-session { margin-top: 10px; }
+.day-session + .day-session { border-top: 0.5px solid var(--line); padding-top: 12px; }
+.day-bar { width: 4px; align-self: stretch; border-radius: 2px; flex-shrink: 0; }
+.day-focus { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+.weekday-picker { display: flex; gap: 6px; }
+.weekday-picker button { flex: 1; height: 40px; border-radius: 10px; background: var(--card-2); font-weight: 700; color: var(--text-2); }
+.weekday-picker button.on { color: #000; }
+.plan-item { background: var(--card); border-radius: 14px; padding: 12px; margin-bottom: 8px; }
+.numfield { display: flex; flex-direction: column; gap: 4px; }
+.numfield span { font-size: 11px; color: var(--text-3); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; text-align: center; }
+.target-chip { display: inline-flex; gap: 4px; align-items: center; font-size: 12px; font-weight: 600; color: var(--text-2); background: var(--card-2); border-radius: 8px; padding: 3px 8px; margin-top: 6px; margin-right: 6px; }
+.week-compare { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+.week-compare div { background: var(--card-2); border-radius: 10px; padding: 8px; text-align: center; }
+.week-compare b { display: block; font-size: 15px; }
+.week-compare span { font-size: 11px; color: var(--text-2); }

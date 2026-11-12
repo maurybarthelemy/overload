@@ -8,6 +8,7 @@ import { startOrResume } from '../lib/start';
 import { Icon } from '../components/Icon';
 import { Bars, LineArea } from '../components/Charts';
 import { Segmented } from '../components/Segmented';
+import { todayWeekday, WEEKDAYS } from '../db/types';
 import { MuscleBadge } from '../components/MuscleBadge';
 
 export default function Dashboard() {
@@ -43,6 +44,7 @@ export default function Dashboard() {
   };
 
   const last = workouts?.[0];
+  const todays = (programs ?? []).filter((p) => p.days?.includes(todayWeekday()));
   const hour = new Date().getHours();
   return (
     <div className="page">
@@ -62,15 +64,28 @@ export default function Dashboard() {
         </Link>
       ) : (
         <div className="hero">
-          <div><h2>Prêt pour la séance ?</h2><p>{programs?.length ? 'Choisissez un programme ou démarrez une séance libre.' : 'Démarrez une séance libre ou créez vos programmes.'}</p></div>
+          {todays.length > 0 ? (
+            <>
+              <div>
+                <span className="chip" style={{ background: todays[0].color + '30', color: todays[0].color }}>{WEEKDAYS[todayWeekday()]} · {todays[0].focus || todays[0].name}</span>
+                <h2 style={{ marginTop: 8 }}>Séance du jour : {todays.map((p) => p.name).join(' + ')}</h2>
+                <p>Votre modèle est prêt, pré-rempli avec vos dernières performances.</p>
+              </div>
+              {todays.map((p) => (
+                <button key={p.id} className="btn primary block" onClick={() => start(p.id)}><Icon name="play" size={18} fill /> Commencer {todays.length > 1 ? p.name : 'la séance'}</button>
+              ))}
+            </>
+          ) : (
+            <div><h2>{programs?.some((p) => p.days?.length) ? `${WEEKDAYS[todayWeekday()]} : repos 😴` : 'Prêt pour la séance ?'}</h2><p>{programs?.some((p) => p.days?.length) ? 'Récupérez bien. Vous pouvez tout de même lancer une séance.' : 'Choisissez un programme ou démarrez une séance libre.'}</p></div>
+          )}
           {programs && programs.length > 0 && (
             <div className="chips" style={{ padding: '2px 18px', margin: '0 -18px' }}>
-              {programs.map((p) => (
+              {programs.filter((p) => !todays.includes(p)).map((p) => (
                 <button key={p.id} className="filter-chip pressable" style={{ background: p.color + '30', color: p.color }} onClick={() => start(p.id)}>{p.name}</button>
               ))}
             </div>
           )}
-          <button className="btn primary block" onClick={() => start()}><Icon name="plus" size={20} stroke={2.6} /> Nouvelle séance</button>
+          <button className={`btn ${todays.length ? '' : 'primary'} block`} onClick={() => start()}><Icon name="plus" size={20} stroke={2.6} /> Séance libre</button>
         </div>
       )}
 

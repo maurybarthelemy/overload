@@ -32,10 +32,35 @@ export interface Exercise {
   createdAt: number;
 }
 
+/** Ligne d'un modèle de séance : ce que l'on PRÉVOIT de faire (jamais modifié par les séances réalisées). */
+export interface ProgramItem {
+  exerciseId: string;
+  sets: number;
+  reps: number;
+  /** Charge de référence en kg (utilisée tant qu'il n'y a pas d'historique) */
+  weight: number;
+}
+
+/** Jours : 0 = lundi … 6 = dimanche */
+export const WEEKDAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+export const WEEKDAYS_SHORT = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+export const todayWeekday = () => (new Date().getDay() + 6) % 7;
+
+/**
+ * Modèle de séance permanent. Démarrer une séance en fait une COPIE :
+ * modifier le modèle ne touche jamais aux séances passées, et inversement.
+ */
 export interface Program {
   id: string;
   name: string;
+  /** Ordre des exercices (conservé pour compatibilité ; synchronisé avec items) */
   exerciseIds: string[];
+  /** Détail prévu : séries / répétitions / charge (absent sur les anciens programmes) */
+  items?: ProgramItem[];
+  /** Jours de la semaine où la séance est programmée */
+  days?: number[];
+  /** Groupe(s) musculaire(s) travaillé(s), ex. « Bras / Épaules » */
+  focus?: string;
   color: string;
   createdAt: number;
 }
@@ -72,6 +97,9 @@ export interface WorkoutExercise {
   /** Technique jugée propre par l'utilisateur */
   goodForm?: boolean;
   comment?: string;
+  /** Objectif copié depuis le modèle au démarrage (figé, non rétroactif) */
+  targetSets?: number;
+  targetReps?: number;
 }
 
 export interface SetEntry {

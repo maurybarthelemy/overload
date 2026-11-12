@@ -2,7 +2,8 @@ import { useMemo } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/database';
-import { deleteWorkout, duplicateWorkout, getActiveWorkout, reopenWorkout } from '../db/actions';
+import { deleteWorkout, duplicateWorkout, getActiveWorkout, reopenWorkout, updateProgramFromWorkout } from '../db/actions';
+import { ProgramCompare } from '../components/ProgramCompare';
 import { DIFFICULTIES } from '../db/types';
 import { buildSession, compareSessions, isPR, sessionsFromSets } from '../lib/analysis';
 import { compact, durationMin, formatDateLong } from '../lib/format';
@@ -20,10 +21,11 @@ export default function WorkoutDetail() {
   const data = useLiveQuery(async () => {
     const w = await db.workouts.get(id);
     if (!w) return null;
+    const program = w.programId ? await db.programs.get(w.programId) : undefined;
     const wes = (await db.workoutExercises.where('workoutId').equals(id).toArray()).sort((a, b) => a.order - b.order);
     const sets = await db.sets.where('workoutId').equals(id).toArray();
     const hist = await db.sets.where('exerciseId').anyOf(wes.map((x) => x.exerciseId)).filter((s) => s.done && s.workoutId !== id && s.date <= w.date).toArray();
-    return { w, wes, sets, hist };
+    return { w, wes, sets, hist, program };
   }, [id]);
 
   const totals = useMemo(() => {
@@ -33,7 +35,7 @@ export default function WorkoutDetail() {
 
   if (data === undefined) return <div className="page" />;
   if (data === null) return <div className="page"><div className="empty"><h3>Séance introuvable</h3><Link to="/history" className="btn mt">Historique</Link></div></div>;
-  const { w, wes, sets, hist } = data;
+  const { w, wes, sets, hist, program } = data;
 
   const duplicate = async () => {
     const active = await getActiveWorkout();
@@ -61,8 +63,16 @@ export default function WorkoutDetail() {
         <div className="card tight stat"><div className="label">Durée</div><div className="value" style={{ fontSize: 22 }}>{w.finishedAt ? durationMin(w.startedAt, w.finishedAt) : '–'}<small>min</small></div></div>
       </div>
       {w.notes && <div className="card mt small muted">{w.notes}</div>}
+      <ProgramCompare workout={w} />
 
       <button className="btn primary block mt2" onClick={duplicate}><Icon name="copy" size={18} /> Refaire cette séance</button>
+      {program && (
+        <button className="btn block mt" onClick={async () => {
+          if (!confirm(`Remplacer le modèle « ${program.name} » par le contenu de cette séance (exercices, nombre de séries, charges) ? Vos séances passées ne seront pas modifiées.`)) return;
+          await updateProgramFromWorkout(program.id, id);
+          toast('Modèle mis à jour pour les prochaines séances');
+        }}><Icon name="programs" size={18} /> Mettre à jour le modèle « {program.name} »</button>
+      )}
 
       <div className="section-title">Exercices</div>
       {wes.map((we) => {

@@ -17,6 +17,7 @@ import { Sheet } from '../components/Sheet';
 import { ExercisePicker } from '../components/ExercisePicker';
 import { TrendChip } from '../components/Trend';
 import { useToast } from '../components/Toast';
+import { ProgramCompare } from '../components/ProgramCompare';
 
 export default function WorkoutPage() {
   const { id = '' } = useParams();
@@ -87,11 +88,13 @@ export default function WorkoutPage() {
         </div>
         <button className="icon-btn" onClick={() => setEditHead(true)} aria-label="Modifier"><Icon name="edit" size={18} /></button>
       </div>
+      {workout.programId && <div className="small muted" style={{ margin: '-10px 0 12px' }}>Séance issue de votre modèle : modifier les charges ici n'affecte ni le modèle ni vos séances passées.</div>}
       <div className="grid3" style={{ marginBottom: 16 }}>
         <div className="card tight stat"><div className="label">Exercices</div><div className="value" style={{ fontSize: 22 }}>{wes.length}</div></div>
         <div className="card tight stat"><div className="label">Séries</div><div className="value" style={{ fontSize: 22 }}>{doneCount}</div></div>
         <div className="card tight stat"><div className="label">Volume</div><div className="value" style={{ fontSize: 22 }}>{Math.round(volume)}<small>kg</small></div></div>
       </div>
+      {doneCount > 0 && <div style={{ margin: '-6px 0 16px' }}><ProgramCompare workout={workout} /></div>}
 
       {wes.map((we, i) => {
         const ex = exMap.get(we.exerciseId);
@@ -170,7 +173,10 @@ function ExerciseCard({ we, ex, sets, sessions, lastMeta, first, last, onValidat
           <div className="prev-line">
             {prev ? <>Dernière fois ({formatDateShort(prev.date)}) : {prev.sets.map((s) => `${showNum(s.weight)}×${s.reps}`).join(' · ')}</> : 'Première séance sur cet exercice'}
           </div>
-          {cmp && <div style={{ marginTop: 6 }}><TrendChip trend={cmp.trend} label={cmp.label} /></div>}
+          <div className="flex wrap" style={{ gap: 0 }}>
+            {we.targetSets && <span className="target-chip">🎯 Objectif {we.targetSets} × {we.targetReps}</span>}
+            {cmp && <span style={{ marginTop: 6 }}><TrendChip trend={cmp.trend} label={cmp.label} /></span>}
+          </div>
         </div>
         <button className="icon-btn" onClick={() => setMenu(true)} aria-label="Options"><Icon name="dots" /></button>
       </div>
