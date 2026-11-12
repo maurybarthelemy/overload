@@ -28,7 +28,7 @@ export function ExercisePicker({ open, onClose, onPick, exclude = [], title = 'A
 
   return (
     <Sheet open={open} onClose={close} title={creating ? 'Nouvel exercice' : title}
-      action={!creating && sel.length > 0 ? <button className="btn primary sm" onClick={() => { onPick(sel); close(); }}>Ajouter ({sel.length})</button> : undefined}>
+>
       {creating ? (
         <ExerciseForm initial={{ name: q, muscle: muscle === 'all' ? undefined : muscle }} submitLabel="Créer et sélectionner"
           onSubmit={async (v) => { const id = await createExercise(v); setSel((s) => [...s, id]); setCreating(false); setQ(''); }} />
@@ -52,6 +52,11 @@ export function ExercisePicker({ open, onClose, onPick, exclude = [], title = 'A
               );
             })}
             {list.length === 0 && <div className="empty small">Aucun exercice trouvé</div>}
+          </div>
+          <div className="picker-footer">
+            <button className="btn primary block" style={{ height: 54 }} disabled={!sel.length} onClick={() => { onPick(sel); close(); }}>
+              {sel.length ? `Ajouter ${sel.length} exercice${sel.length > 1 ? 's' : ''}` : 'Touchez les exercices à ajouter'}
+            </button>
           </div>
         </>
       )}

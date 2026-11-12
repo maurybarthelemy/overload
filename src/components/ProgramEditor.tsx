@@ -39,15 +39,18 @@ export function ProgramEditor({ initial, onClose }: { initial: Partial<Program>;
   const move = (i: number, d: number) => setItems((a) => { const b = [...a]; const j = i + d; if (j < 0 || j >= b.length) return a; [b[i], b[j]] = [b[j], b[i]]; return b; });
   const patch = (i: number, p: Partial<ProgramItem>) => setItems((a) => a.map((x, k) => (k === i ? { ...x, ...p } : x)));
   const valid = name.trim().length > 0;
-  const save = async () => {
+  // Enregistrement automatique : chaque ajout d'exercice et la fermeture enregistrent le modèle
+  const [pid, setPid] = useState(initial.id);
+  const persist = async (next: ProgramItem[] = items) => {
     if (!valid) return;
-    await saveProgram({ id: initial.id, name: name.trim(), focus, days, items, color });
-    onClose();
+    const id = await saveProgram({ id: pid, name: name.trim(), focus, days, items: next, color });
+    setPid(id);
   };
+  const save = async () => { await persist(); onClose(); };
 
   return (
     <>
-      <Sheet open onClose={onClose} title={initial.id ? 'Modifier la séance modèle' : 'Nouvelle séance modèle'} action={<button className="btn primary sm" disabled={!valid} onClick={save}>OK</button>}>
+      <Sheet open onClose={save} title={initial.id ? 'Modifier la séance modèle' : 'Nouvelle séance modèle'} action={<button className="btn primary sm" disabled={!valid} onClick={save}>OK</button>}>
         <div className="field"><label>Nom de la séance</label><input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="ex. Pectoraux" /></div>
         <div className="field"><label>Groupe(s) musculaire(s) travaillé(s)</label><input className="input" value={focus} onChange={(e) => setFocus(e.target.value)} placeholder="ex. Bras / Épaules" /></div>
         <div className="field">
@@ -89,13 +92,17 @@ export function ProgramEditor({ initial, onClose }: { initial: Partial<Program>;
         })}
         <button className="btn blue block mt" onClick={() => setPicker(true)}><Icon name="plus" size={18} /> Ajouter des exercices</button>
         <p className="small muted mt" style={{ padding: '0 4px' }}>
-          Au démarrage, chaque série est pré-remplie avec votre dernière performance réelle (ou la charge du modèle s'il n'y en a pas encore).
+          Les modifications sont enregistrées automatiquement.
         </p>
         <button className="btn primary block mt" disabled={!valid} onClick={save}>Enregistrer le modèle</button>
-        {initial.id && <button className="btn danger block mt" onClick={async () => { if (confirm('Supprimer ce modèle ? Vos séances passées sont conservées.')) { await deleteProgram(initial.id!); onClose(); } }}>Supprimer le modèle</button>}
+        {pid && <button className="btn danger block mt" onClick={async () => { if (confirm('Supprimer ce modèle ? Vos séances passées sont conservées.')) { await deleteProgram(pid); onClose(); } }}>Supprimer le modèle</button>}
       </Sheet>
       <ExercisePicker open={picker} onClose={() => setPicker(false)} exclude={items.map((x) => x.exerciseId)}
-        onPick={(ids) => setItems((a) => [...a, ...ids.map((exerciseId) => ({ exerciseId, sets: 3, reps: exMap.get(exerciseId)?.repMax ?? 10, weight: 0 }))])} />
+        onPick={(ids) => {
+          const next = [...items, ...ids.map((exerciseId) => ({ exerciseId, sets: 3, reps: exMap.get(exerciseId)?.repMax ?? 10, weight: 0 }))];
+          setItems(next);
+          persist(next);
+        }} />
     </>
   );
 }
