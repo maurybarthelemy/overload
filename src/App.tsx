@@ -14,6 +14,7 @@ const LibraryPage = lazy(() => import('./pages/LibraryPage'));
 const ExerciseDetail = lazy(() => import('./pages/ExerciseDetail'));
 const StatsPage = lazy(() => import('./pages/StatsPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const CarnetPage = lazy(() => import('./pages/CarnetPage'));
 
 const TABS = [
   { to: '/', icon: 'home', label: 'Accueil' },
@@ -41,6 +42,7 @@ function Shell() {
           <Route path="/exercise/:id" element={<ExerciseDetail />} />
           <Route path="/stats" element={<StatsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/carnet/:id" element={<CarnetPage />} />
           <Route path="*" element={<Dashboard />} />
         </Routes>
       </Suspense>

@@ -72,6 +72,8 @@ export interface Workout {
   date: string;
   programId?: string;
   status: 'active' | 'done';
+  /** Entrée du carnet (poids notés hors séance guidée) : une par jour et par programme */
+  quick?: boolean;
   notes?: string;
   startedAt: number;
   finishedAt?: number;

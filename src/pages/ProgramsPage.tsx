@@ -75,11 +75,14 @@ export default function ProgramsPage() {
                     </div>
                     {done && <span className="chip up"><Icon name="check" size={12} stroke={3} /> Faite</span>}
                   </div>
+                  <button className="btn primary block mt" style={{ height: 44 }} onClick={() => nav(`/carnet/${p.id}`)}>
+                    <Icon name="edit" size={16} /> Noter mes poids
+                  </button>
                   <div className="flex mt" style={{ gap: 8 }}>
-                    <button className={`btn ${isToday && !done ? 'primary' : ''} sm`} style={{ flex: 1, height: 42, whiteSpace: 'nowrap', padding: '0 10px', fontSize: 14 }} onClick={() => start(p.id)}>
+                    <button className="btn sm" style={{ flex: 1, height: 40, whiteSpace: 'nowrap', padding: '0 10px', fontSize: 14 }} onClick={() => start(p.id)}>
                       <Icon name="play" size={14} fill /> Commencer la séance
                     </button>
-                    <button className="btn sm" style={{ height: 42, padding: '0 12px' }} onClick={() => setEditing(p)} aria-label="Modifier le programme"><Icon name="edit" size={16} /> Modifier</button>
+                    <button className="btn sm" style={{ height: 40, padding: '0 12px' }} onClick={() => setEditing(p)} aria-label="Modifier le programme"><Icon name="edit" size={16} /> Modifier</button>
                   </div>
                 </div>
               );

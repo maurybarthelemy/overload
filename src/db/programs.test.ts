@@ -1,7 +1,7 @@
 import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from './database';
-import { ensureWeeklyPlan, finishWorkout, saveProgram, startWorkout, updateSet } from './actions';
+import { ensureWeeklyPlan, finishWorkout, quickLog, saveProgram, startWorkout, updateSet } from './actions';
 
 const setsOf = async (workoutId: string) => (await db.sets.where('workoutId').equals(workoutId).toArray()).sort((a, b) => a.createdAt - b.createdAt);
 
@@ -63,5 +63,26 @@ describe('modèles permanents et historique', () => {
     // Semaine 3 : 4 séries (nouveau modèle), pré-remplies avec la dernière perf réelle
     const w3 = await startWorkout({ programId: pid });
     expect((await setsOf(w3)).map((s) => [s.weight, s.reps])).toEqual([[52.5, 8], [52.5, 8], [52.5, 8], [52.5, 8]]);
+  });
+
+  it('carnet : note à tout moment, remplace la note du jour sans toucher aux autres jours', async () => {
+    const pid = await saveProgram({ name: 'Pectoraux', days: [0], items: [{ exerciseId: 'ex-developpe-couche', sets: 3, reps: 10, weight: 50 }] });
+    const ex = 'ex-developpe-couche';
+    await quickLog({ exerciseId: ex, programId: pid, date: '2026-11-02', sets: [{ weight: 50, reps: 10 }, { weight: 50, reps: 10 }] });
+    await quickLog({ exerciseId: ex, programId: pid, date: '2026-11-09', sets: [{ weight: 52.5, reps: 8 }] });
+    await quickLog({ exerciseId: ex, programId: pid, date: '2026-11-09', sets: [{ weight: 52.5, reps: 9 }, { weight: 52.5, reps: 8 }] });
+    await quickLog({ exerciseId: 'ex-pec-deck', programId: pid, date: '2026-11-09', sets: [{ weight: 30, reps: 12 }] });
+    const ws = await db.workouts.toArray();
+    expect(ws).toHaveLength(2);
+    expect(ws.every((w) => w.status === 'done' && w.quick && w.programId === pid)).toBe(true);
+    const s = await db.sets.where('exerciseId').equals(ex).toArray();
+    expect(s.filter((x) => x.date === '2026-11-02').map((x) => x.weight)).toEqual([50, 50]);
+    expect(s.filter((x) => x.date === '2026-11-09').map((x) => x.reps).sort()).toEqual([8, 9]);
+    expect(s.every((x) => x.done)).toBe(true);
+    // vider la note du jour la supprime, l'autre jour reste intact
+    await quickLog({ exerciseId: ex, programId: pid, date: '2026-11-09', sets: [] });
+    await quickLog({ exerciseId: 'ex-pec-deck', programId: pid, date: '2026-11-09', sets: [] });
+    expect(await db.workouts.count()).toBe(1);
+    expect(await db.sets.count()).toBe(2);
   });
 });

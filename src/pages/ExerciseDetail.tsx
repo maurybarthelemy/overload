@@ -13,6 +13,7 @@ import { Segmented } from '../components/Segmented';
 import { Sheet } from '../components/Sheet';
 import { ExerciseForm } from '../components/ExerciseForm';
 import { TrendChip } from '../components/Trend';
+import { QuickLogSheet } from '../components/QuickLogSheet';
 
 type Metric = 'weight' | 'e1rm' | 'reps' | 'volume';
 
@@ -29,6 +30,7 @@ export default function ExerciseDetail() {
   const [metric, setMetric] = useState<Metric>('weight');
   const [edit, setEdit] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  const [logging, setLogging] = useState(false);
 
   const sessions = useMemo(() => sessionsFromSets(data?.sets ?? []), [data]);
   const records = useMemo(() => computeRecords(sessions), [sessions]);
@@ -69,8 +71,11 @@ export default function ExerciseDetail() {
         </div>
       </div>
 
+      <button className="btn primary block" style={{ marginBottom: 14 }} onClick={() => setLogging(true)}><Icon name="edit" size={18} /> Noter mes poids</button>
+      <QuickLogSheet exerciseId={logging ? id : null} onClose={() => setLogging(false)} />
+
       {sessions.length === 0 ? (
-        <div className="card empty"><div className="big">📈</div><h3>Pas encore d'historique</h3><p>Ajoutez cet exercice à une séance pour suivre votre progression.</p></div>
+        <div className="card empty"><div className="big">📈</div><h3>Pas encore d'historique</h3><p>Touchez « Noter mes poids » pour enregistrer votre première performance.</p></div>
       ) : (
         <>
           <div className="grid2">

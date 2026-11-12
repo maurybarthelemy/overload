@@ -69,10 +69,13 @@ export default function Dashboard() {
               <div>
                 <span className="chip" style={{ background: todays[0].color + '30', color: todays[0].color }}>{WEEKDAYS[todayWeekday()]} · {todays[0].focus || todays[0].name}</span>
                 <h2 style={{ marginTop: 8 }}>Séance du jour : {todays.map((p) => p.name).join(' + ')}</h2>
-                <p>Votre modèle est prêt, pré-rempli avec vos dernières performances.</p>
+                <p>Vos derniers poids sont affichés : notez simplement ce que vous faites.</p>
               </div>
               {todays.map((p) => (
-                <button key={p.id} className="btn primary block" onClick={() => start(p.id)}><Icon name="play" size={18} fill /> Commencer {todays.length > 1 ? p.name : 'la séance'}</button>
+                <div key={p.id} className="flex" style={{ gap: 8 }}>
+                  <Link to={`/carnet/${p.id}`} className="btn primary" style={{ flex: 1 }}><Icon name="edit" size={18} /> Noter mes poids{todays.length > 1 ? ` · ${p.name}` : ''}</Link>
+                  <button className="btn" onClick={() => start(p.id)} aria-label="Séance guidée"><Icon name="play" size={16} fill /></button>
+                </div>
               ))}
             </>
           ) : (
@@ -81,7 +84,7 @@ export default function Dashboard() {
           {programs && programs.length > 0 && (
             <div className="chips" style={{ padding: '2px 18px', margin: '0 -18px' }}>
               {programs.filter((p) => !todays.includes(p)).map((p) => (
-                <button key={p.id} className="filter-chip pressable" style={{ background: p.color + '30', color: p.color }} onClick={() => start(p.id)}>{p.name}</button>
+                <Link key={p.id} to={`/carnet/${p.id}`} className="filter-chip pressable" style={{ background: p.color + '30', color: p.color }}>{p.name}</Link>
               ))}
             </div>
           )}

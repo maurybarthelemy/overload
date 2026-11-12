@@ -5,13 +5,14 @@ Fonctionne entièrement hors connexion ; les données restent sur l'appareil (In
 
 ## Fonctionnalités
 - **Dashboard** : séances, exercices pratiqués, dernière séance, progression globale (1RM estimé sur 8 semaines), records récents, courbes charge / volume, démarrage rapide.
-- **Séance en cours** : programmes ou séance libre, séries pré-remplies avec les charges de la dernière fois, validation d'une série en un geste (enregistrée immédiatement), minuteur de repos, détection des records en direct, difficulté ressentie, technique, commentaires, modification / duplication / suppression de séries.
+- **Séance en cours** : programmes ou séance libre, séries pré-remplies avec les charges de la dernière fois, validation d'une série en un geste (enregistrée immédiatement), minuteur de repos optionnel (désactivé par défaut), détection des records en direct, difficulté ressentie, technique, commentaires, modification / duplication / suppression de séries.
 - **Surcharge progressive** (double progression) : comparaison avec la séance précédente, suggestion indicative (+1 rép., +X kg quand toutes les séries atteignent le haut de fourchette, consolidation si ressenti dur ou technique à revoir, allègement si baisse sur deux séances). Rien n'est imposé.
 - **Fiche exercice** : toutes les performances, records (charge, 1RM estimé, répétitions), graphiques charge / rép. / 1RM / volume sur 1M, 3M, 6M, 1A, tout.
 - **Bibliothèque** : environ 50 exercices sur 10 groupes musculaires, exercices personnalisés, favoris, fourchette de répétitions et incrément réglables.
 - **Programmes — semaine type** : calendrier des 7 jours (par défaut : lundi Pectoraux, mardi Bras / Épaules, mercredi et jeudi repos, vendredi Dos, samedi Bras / Épaules, dimanche Jambes). Chaque jour a une séance modèle **permanente** (exercices, ordre, séries, répétitions ciblées, charge), avec « Commencer la séance » et « Modifier ».
   - Démarrer une séance en crée une **copie** pré-remplie avec les dernières performances réelles. Les modèles et l'historique sont séparés : modifier un modèle ne change jamais les séances passées, et une séance réalisée ne modifie le modèle que si l'on choisit « Mettre à jour le modèle ».
   - Comparaison automatique avec la séance précédente du même programme (volume, séries, répétitions) et avec le dernier passage sur chaque exercice.
+- **Carnet** : « Noter mes poids » à tout moment (programme du jour, fiche exercice) sans démarrer de séance. Les dernières charges sont pré-remplies, la date est modifiable, et les notes d'un même jour sont regroupées et comptées dans l'historique et les statistiques.
 - **Statistiques** : séances et volume par semaine, comparaison avec la période précédente, charges par exercice, séries par muscle, records.
 - **Historique** : toutes les séances, « Refaire cette séance » (duplication).
 - **Sauvegarde** : enregistrement automatique, stockage persistant, points de restauration automatiques, export JSON (restaurable) / CSV, import avec fusion ou remplacement.

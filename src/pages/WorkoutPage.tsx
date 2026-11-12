@@ -40,8 +40,8 @@ export default function WorkoutPage() {
   const [editHead, setEditHead] = useState(false);
   const [finishSheet, setFinishSheet] = useState(false);
   const [restEnd, setRestEnd] = useState<number | null>(null);
-  const [restDur, setRestDur] = useState(90);
-  useEffect(() => { getMeta('restSeconds', 90).then(setRestDur); }, []);
+  const [restDur, setRestDur] = useState(0);
+  useEffect(() => { getMeta('restSeconds', 0).then(setRestDur); }, []);
 
   if (workout === undefined || !wes || !sets) return <div className="page" />;
   if (workout === null || !workout) return <div className="page"><div className="empty"><h3>Séance introuvable</h3><Link className="btn mt" to="/">Accueil</Link></div></div>;
@@ -53,7 +53,7 @@ export default function WorkoutPage() {
   const onValidate = async (s: SetEntry, value: boolean) => {
     await updateSet(s.id, { done: value });
     if (!value) return;
-    if (isActive) setRestEnd(Date.now() + restDur * 1000);
+    if (isActive && restDur > 0) setRestEnd(Date.now() + restDur * 1000);
     const prev = sessionsFromSets((history?.sets ?? []).filter((x) => x.exerciseId === s.exerciseId));
     const pr = isPR(s, prev);
     if (pr) toast(pr === 'weight' ? '🏆 Nouveau record de charge !' : '🏆 Nouveau record (1RM estimé) !');

@@ -162,6 +162,55 @@ export async function duplicateWorkout(sourceId: string): Promise<string> {
   return id;
 }
 
+// ---------- Carnet (notes rapides, sans séance) ----------
+/**
+ * Note les poids d'un exercice à n'importe quel moment, sans démarrer de séance.
+ * Les notes d'un même jour (et d'un même programme) sont regroupées dans une séance « carnet »,
+ * ce qui alimente l'historique, les records et les graphiques comme une séance normale.
+ * Re-noter le même exercice le même jour remplace la note de ce jour (jamais les jours précédents).
+ */
+export async function quickLog(opts: { exerciseId: string; date: string; sets: { weight: number; reps: number }[]; programId?: string; comment?: string }) {
+  const program = opts.programId ? await db.programs.get(opts.programId) : undefined;
+  const clean = opts.sets.filter((s) => s.reps > 0);
+  await db.transaction('rw', db.workouts, db.workoutExercises, db.sets, async () => {
+    let w = await db.workouts.where('date').equals(opts.date).filter((x) => !!x.quick && x.status === 'done' && (x.programId ?? '') === (program?.id ?? '')).first();
+    if (!w) {
+      if (!clean.length) return;
+      w = { id: uid(), date: opts.date, status: 'done', quick: true, startedAt: Date.now(), name: program?.name ?? 'Carnet', programId: program?.id };
+      await db.workouts.add(w);
+    }
+    let we = await db.workoutExercises.where('workoutId').equals(w.id).filter((x) => x.exerciseId === opts.exerciseId).first();
+    if (we) await db.sets.where('workoutExerciseId').equals(we.id).delete();
+    if (!clean.length) {
+      if (we) await db.workoutExercises.delete(we.id);
+      if ((await db.workoutExercises.where('workoutId').equals(w.id).count()) === 0) await db.workouts.delete(w.id);
+      return;
+    }
+    if (!we) {
+      const order = await db.workoutExercises.where('workoutId').equals(w.id).count();
+      const plan = program?.items?.find((i) => i.exerciseId === opts.exerciseId);
+      we = { id: uid(), workoutId: w.id, exerciseId: opts.exerciseId, order, targetSets: plan?.sets, targetReps: plan?.reps };
+      await db.workoutExercises.add(we);
+    }
+    await db.workoutExercises.update(we.id, { comment: opts.comment || undefined });
+    const now = Date.now();
+    await db.sets.bulkAdd(clean.map((s, i) => ({
+      id: uid(), workoutExerciseId: we!.id, workoutId: w!.id, exerciseId: opts.exerciseId, order: i,
+      weight: s.weight, reps: s.reps, done: true, date: opts.date, createdAt: now + i,
+    })));
+  });
+}
+
+/** Note du jour pour un exercice (pour la pré-remplir / la modifier). */
+export async function quickLogEntry(exerciseId: string, date: string, programId?: string) {
+  const w = await db.workouts.where('date').equals(date).filter((x) => !!x.quick && (x.programId ?? '') === (programId ?? '')).first();
+  if (!w) return null;
+  const we = await db.workoutExercises.where('workoutId').equals(w.id).filter((x) => x.exerciseId === exerciseId).first();
+  if (!we) return null;
+  const sets = (await db.sets.where('workoutExerciseId').equals(we.id).toArray()).sort((a, b) => a.order - b.order);
+  return { sets, comment: we.comment ?? '' };
+}
+
 // ---------- Exercices ----------
 export async function createExercise(data: { name: string; muscle: MuscleGroup; repMin?: number; repMax?: number; increment?: number }) {
   const id = 'cx-' + uid();

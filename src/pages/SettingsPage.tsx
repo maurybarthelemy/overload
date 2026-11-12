@@ -15,7 +15,7 @@ export default function SettingsPage() {
   const [pending, setPending] = useState<BackupFile | null>(null);
   const [persisted, setPersisted] = useState<boolean | null>(null);
   const [usage, setUsage] = useState<string>('');
-  const [rest, setRest] = useState(90);
+  const [rest, setRest] = useState(0);
   const lastExport = useLiveQuery(() => db.meta.get('lastExport').then((m) => (m?.value as number) ?? 0));
   const snapshots = useLiveQuery(() => db.backups.orderBy('createdAt').reverse().toArray());
   const counts = useLiveQuery(async () => ({ w: await db.workouts.count(), s: await db.sets.count(), e: await db.exercises.count() }));
@@ -23,7 +23,7 @@ export default function SettingsPage() {
   useEffect(() => {
     navigator.storage?.persisted?.().then(setPersisted).catch(() => setPersisted(null));
     navigator.storage?.estimate?.().then((e) => setUsage(`${((e.usage ?? 0) / 1024 / 1024).toFixed(1)} Mo utilisés`)).catch(() => {});
-    getMeta('restSeconds', 90).then(setRest);
+    getMeta('restSeconds', 0).then(setRest);
   }, []);
 
   const standalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone;
@@ -95,8 +95,9 @@ export default function SettingsPage() {
       <div className="section-title">Séance</div>
       <div className="list">
         <div className="row">
-          <div className="grow"><div className="title">Temps de repos</div><div className="meta">Minuteur lancé à chaque série validée</div></div>
+          <div className="grow"><div className="title">Temps de repos</div><div className="meta">Minuteur après chaque série validée (désactivé par défaut)</div></div>
           <select className="input" style={{ width: 110, height: 38 }} value={rest} onChange={async (e) => { const v = Number(e.target.value); setRest(v); await setMeta('restSeconds', v); }}>
+            <option value={0}>Désactivé</option>
             {[30, 45, 60, 75, 90, 120, 150, 180, 240, 300].map((s) => <option key={s} value={s}>{Math.floor(s / 60)}:{String(s % 60).padStart(2, '0')}</option>)}
           </select>
         </div>
