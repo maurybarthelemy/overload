@@ -38,6 +38,7 @@ export default function WorkoutPage() {
 
   const [picker, setPicker] = useState(false);
   const [editHead, setEditHead] = useState(false);
+  const [finishSheet, setFinishSheet] = useState(false);
   const [restEnd, setRestEnd] = useState<number | null>(null);
   const [restDur, setRestDur] = useState(90);
   useEffect(() => { getMeta('restSeconds', 90).then(setRestDur); }, []);
@@ -59,13 +60,16 @@ export default function WorkoutPage() {
     if ('vibrate' in navigator) navigator.vibrate?.(30);
   };
 
+  const filledPending = sets.filter((s) => !s.done && s.reps > 0);
   const finish = async () => {
-    const pending = sets.filter((s) => !s.done).length;
-    if (doneCount === 0) {
-      if (confirm('Aucune série validée. Supprimer cette séance ?')) { await deleteWorkout(id); nav('/'); }
-      return;
-    }
-    if (pending && !confirm(`${pending} série(s) non validée(s) seront ignorées. Terminer la séance ?`)) return;
+    // Séries remplies mais non cochées : on demande, sans jamais proposer de suppression par défaut
+    if (filledPending.length) { setFinishSheet(true); return; }
+    if (doneCount === 0) { toast('Aucune série à enregistrer pour l\'instant'); return; }
+    await doFinish();
+  };
+  const doFinish = async (validateFilled = false) => {
+    setFinishSheet(false);
+    if (validateFilled) for (const s of filledPending) await updateSet(s.id, { done: true });
     await finishWorkout(id);
     await snapshot('fin de séance');
     toast('Séance enregistrée ✓');
@@ -118,6 +122,22 @@ export default function WorkoutPage() {
       </button>
 
       <ExercisePicker open={picker} onClose={() => setPicker(false)} onPick={async (ids) => { for (const x of ids) await addExerciseToWorkout(id, x); }} />
+      <Sheet open={finishSheet} onClose={() => setFinishSheet(false)} title="Terminer la séance">
+        <p className="muted">
+          {filledPending.length} série{filledPending.length > 1 ? 's' : ''} remplie{filledPending.length > 1 ? 's' : ''} mais pas encore validée{filledPending.length > 1 ? 's' : ''} (✓).
+          {doneCount > 0 ? ` ${doneCount} série(s) déjà validée(s).` : ''}
+        </p>
+        <div className="list mt">
+          {wes.map((we) => {
+            const n = filledPending.filter((s) => s.workoutExerciseId === we.id).length;
+            return n ? <div key={we.id} className="row" style={{ minHeight: 44 }}><div className="grow title">{exMap.get(we.exerciseId)?.name}</div><span className="small muted">{n} série{n > 1 ? 's' : ''}</span></div> : null;
+          })}
+        </div>
+        <p className="small muted mt">Un exercice non réalisé ? Touchez « Continuer la séance » et retirez-le (menu ⋯) avant de terminer.</p>
+        <button className="btn primary block mt2" onClick={() => doFinish(true)}><Icon name="check" size={18} /> Enregistrer les {filledPending.length} séries remplies</button>
+        {doneCount > 0 && <button className="btn block mt" onClick={() => doFinish(false)}>Garder seulement les {doneCount} série(s) validée(s)</button>}
+        <button className="btn ghost block mt" onClick={() => setFinishSheet(false)}>Continuer la séance</button>
+      </Sheet>
       <Sheet open={editHead} onClose={() => setEditHead(false)} title="Séance">
         <HeadForm name={workout.name} date={workout.date} notes={workout.notes ?? ''} onSave={async (v) => { await updateWorkout(id, v); setEditHead(false); }} />
       </Sheet>
@@ -195,7 +215,11 @@ function ExerciseCard({ we, ex, sets, sessions, lastMeta, first, last, onValidat
           onValidate={(v) => onValidate(s, v)} onMenu={() => setSetMenuFor(s)}
           pr={s.done && prev ? isPR(s, sessions) : null} />
       ))}
-      <button className="btn ghost block sm mt" onClick={() => addSet(we)}><Icon name="plus" size={18} /> Ajouter une série</button>
+      {pendingSets.length > 0 && sets.some((x) => x.done) === false && <div className="small muted" style={{ textAlign: 'center', marginTop: 6 }}>Touchez ✓ après chaque série pour l'enregistrer</div>}
+      <div className="flex mt" style={{ gap: 8 }}>
+        <button className="btn ghost sm" style={{ flex: 1 }} onClick={() => addSet(we)}><Icon name="plus" size={18} /> Ajouter une série</button>
+        {pendingSets.length > 1 && <button className="btn sm" style={{ flex: 1 }} onClick={async () => { for (const x of pendingSets) await onValidate(x, true); }}><Icon name="check" size={16} stroke={3} /> Tout valider</button>}
+      </div>
 
       {notes ? (
         <div className="mt">
