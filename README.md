@@ -4,6 +4,13 @@ Application web progressive, installable sur iPhone, pour suivre ses séances et
 Fonctionne entièrement hors connexion ; les données restent sur l'appareil (IndexedDB).
 
 ## Fonctionnalités
+L'interface tient en **3 onglets** :
+1. **Séances** : les séances modèles (Pectoraux, Bras / Épaules, Dos, Jambes). On touche « Mettre mes poids », les derniers poids sont pré-remplis, on modifie et on enregistre. Pas de séance à démarrer ni à terminer, pas de minuteur. Un brouillon est conservé si l'app est fermée avant d'enregistrer.
+2. **Historique** : les séances faites, modifiables.
+3. **Progression** : l'objectif de la prochaine séance pour chaque exercice, la tendance, le record et une mini-courbe. Un toucher ouvre la courbe détaillée.
+
+Les écrans plus complets restent accessibles : tableau de bord (`#/accueil`), statistiques (depuis Progression), réglages et sauvegarde (depuis Séances), séance guidée.
+
 - **Dashboard** : séances, exercices pratiqués, dernière séance, progression globale (1RM estimé sur 8 semaines), records récents, courbes charge / volume, démarrage rapide.
 - **Séance en cours** : programmes ou séance libre, séries pré-remplies avec les charges de la dernière fois, validation d'une série en un geste (enregistrée immédiatement), minuteur de repos optionnel (désactivé par défaut), détection des records en direct, difficulté ressentie, technique, commentaires, modification / duplication / suppression de séries.
 - **Surcharge progressive** (double progression) : comparaison avec la séance précédente, suggestion indicative (+1 rép., +X kg quand toutes les séries atteignent le haut de fourchette, consolidation si ressenti dur ou technique à revoir, allègement si baisse sur deux séances). Rien n'est imposé.

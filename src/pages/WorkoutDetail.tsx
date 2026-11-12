@@ -45,6 +45,7 @@ export default function WorkoutDetail() {
     nav(`/workout/${nid}`);
   };
   const edit = async () => {
+    if (w.quick && w.programId) { nav(`/seance/${w.programId}?date=${w.date}`); return; }
     try { await reopenWorkout(id); nav(`/workout/${id}`); } catch (e) { toast((e as Error).message); }
   };
 
@@ -60,12 +61,14 @@ export default function WorkoutDetail() {
       <div className="grid3">
         <div className="card tight stat"><div className="label">Séries</div><div className="value" style={{ fontSize: 22 }}>{totals.n}</div></div>
         <div className="card tight stat"><div className="label">Volume</div><div className="value" style={{ fontSize: 22 }}>{compact(totals.vol)}</div></div>
-        <div className="card tight stat"><div className="label">Durée</div><div className="value" style={{ fontSize: 22 }}>{w.finishedAt ? durationMin(w.startedAt, w.finishedAt) : '–'}<small>min</small></div></div>
+        <div className="card tight stat"><div className="label">Durée</div><div className="value" style={{ fontSize: 22 }}>{w.finishedAt ? <>{durationMin(w.startedAt, w.finishedAt)}<small>min</small></> : '–'}</div></div>
       </div>
       {w.notes && <div className="card mt small muted">{w.notes}</div>}
       <ProgramCompare workout={w} />
 
-      <button className="btn primary block mt2" onClick={duplicate}><Icon name="copy" size={18} /> Refaire cette séance</button>
+      {w.quick && w.programId
+        ? <button className="btn primary block mt2" onClick={() => nav(`/seance/${w.programId}`)}><Icon name="edit" size={18} /> Refaire aujourd'hui</button>
+        : <button className="btn primary block mt2" onClick={duplicate}><Icon name="copy" size={18} /> Refaire cette séance</button>}
       {program && (
         <button className="btn block mt" onClick={async () => {
           if (!confirm(`Remplacer le modèle « ${program.name} » par le contenu de cette séance (exercices, nombre de séries, charges) ? Vos séances passées ne seront pas modifiées.`)) return;

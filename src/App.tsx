@@ -3,7 +3,7 @@ import { HashRouter, Link, NavLink, Route, Routes, useLocation } from 'react-rou
 import { Icon } from './components/Icon';
 import { ToastProvider } from './components/Toast';
 import { useActiveWorkout } from './hooks/data';
-import Dashboard from './pages/Dashboard';
+import SeancesPage from './pages/SeancesPage';
 import WorkoutPage from './pages/WorkoutPage';
 
 // Pages secondaires chargées à la demande (démarrage plus rapide)
@@ -15,25 +15,30 @@ const ExerciseDetail = lazy(() => import('./pages/ExerciseDetail'));
 const StatsPage = lazy(() => import('./pages/StatsPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const CarnetPage = lazy(() => import('./pages/CarnetPage'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const SessionForm = lazy(() => import('./pages/SessionForm'));
+const ProgressionPage = lazy(() => import('./pages/ProgressionPage'));
 
+// Interface simplifiée : 3 onglets. Les autres écrans restent accessibles via les liens.
 const TABS = [
-  { to: '/', icon: 'home', label: 'Accueil' },
-  { to: '/programs', icon: 'programs', label: 'Programmes' },
+  { to: '/', icon: 'library', label: 'Séances' },
   { to: '/history', icon: 'history', label: 'Historique' },
-  { to: '/library', icon: 'library', label: 'Exercices' },
-  { to: '/stats', icon: 'stats', label: 'Stats' },
+  { to: '/progression', icon: 'stats', label: 'Progression' },
 ];
 
 function Shell() {
   const loc = useLocation();
   const active = useActiveWorkout();
   useEffect(() => { window.scrollTo(0, 0); }, [loc.pathname]);
-  const inWorkout = loc.pathname.startsWith('/workout/');
+  const inWorkout = loc.pathname.startsWith('/workout/') || loc.pathname.startsWith('/seance/');
   return (
     <div className="app">
       <Suspense fallback={<div className="page" />}>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={<SeancesPage />} />
+          <Route path="/seance/:id" element={<SessionForm />} />
+          <Route path="/progression" element={<ProgressionPage />} />
+          <Route path="/accueil" element={<Dashboard />} />
           <Route path="/workout/:id" element={<WorkoutPage />} />
           <Route path="/history" element={<HistoryPage />} />
           <Route path="/history/:id" element={<WorkoutDetail />} />
@@ -43,7 +48,7 @@ function Shell() {
           <Route path="/stats" element={<StatsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/carnet/:id" element={<CarnetPage />} />
-          <Route path="*" element={<Dashboard />} />
+          <Route path="*" element={<SeancesPage />} />
         </Routes>
       </Suspense>
       {active && !inWorkout && loc.pathname !== '/' && (

@@ -278,3 +278,18 @@ select.input { appearance: none; -webkit-appearance: none; }
 .week-compare div { background: var(--card-2); border-radius: 10px; padding: 8px; text-align: center; }
 .week-compare b { display: block; font-size: 15px; }
 .week-compare span { font-size: 11px; color: var(--text-2); }
+
+/* ---------- Interface simplifiée ---------- */
+.seance-card { background: var(--card); border-radius: 20px; padding: 16px 16px 8px; margin-bottom: 12px; border: 1px solid transparent; }
+.seance-card.today { border-color: rgba(48, 209, 88, .45); }
+.seance-title { font-size: 22px; font-weight: 800; letter-spacing: -0.01em; }
+.seance-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.ex-card.skipped { opacity: .5; }
+.target-line { font-size: 14px; background: var(--accent-dim); color: var(--text); border-radius: 10px; padding: 8px 10px; margin-top: 8px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.target-line b { color: var(--accent); }
+.target-line button { margin-left: auto; font-size: 13px; font-weight: 600; color: var(--accent); padding: 2px 4px; }
+.date-pill { position: relative; display: inline-flex; align-items: center; gap: 8px; background: var(--card); border-radius: 999px; padding: 8px 14px; font-size: 14px; font-weight: 600; color: var(--text-2); }
+.date-pill input { position: absolute; inset: 0; opacity: 0; width: 100%; }
+.prog-row { display: flex; gap: 12px; padding: 14px 16px; position: relative; }
+.prog-row + .prog-row::before { content: ''; position: absolute; top: 0; left: 16px; right: 0; border-top: 0.5px solid var(--line); }
+.prog-row:active { background: var(--card-2); }

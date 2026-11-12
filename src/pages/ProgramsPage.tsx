@@ -130,7 +130,7 @@ export default function ProgramsPage() {
   );
 }
 
-function ProgramEditor({ initial, onClose }: { initial: Partial<Program>; onClose: () => void }) {
+export function ProgramEditor({ initial, onClose }: { initial: Partial<Program>; onClose: () => void }) {
   const exMap = useExerciseMap();
   const allSets = useAllDoneSets();
   const [name, setName] = useState(initial.name ?? '');
